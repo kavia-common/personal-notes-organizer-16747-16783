@@ -1,0 +1,99 @@
+---
+import { store } from "../lib/store";
+const palette = {
+  primary: "#1e88e5",
+  secondary: "#1565c0",
+  accent: "#ffd600",
+};
+---
+
+<aside class="sidebar">
+  <div class="section">
+    <button id="new-note" class="btn btn-primary wfull">+ New note</button>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Tags</div>
+    <div id="tags" class="tags"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Filters</div>
+    <button class="btn btn-ghost wfull" id="clear-filter">Clear filters</button>
+  </div>
+</aside>
+
+<style>
+  .sidebar {
+    height: calc(100vh - 64px);
+    border-right: 1px solid var(--border);
+    background: linear-gradient(180deg, #ffffff, #f6f9ff);
+    padding: 12px;
+  }
+  .section { display: grid; gap: 10px; margin-bottom: 16px; }
+  .section-title { font-weight: 700; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .tag-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    transition: box-shadow .2s ease, transform .05s ease, border-color .2s ease;
+    box-shadow: var(--shadow-sm);
+  }
+  .tag-chip[data-active="true"] {
+    border-color: ${palette.primary};
+    box-shadow: 0 8px 16px rgba(30,136,229,0.18);
+  }
+  .count { color: var(--muted); font-size: 12px; }
+  .wfull { width: 100%; }
+</style>
+
+<script>
+  import { store } from "../lib/store";
+
+  const btnNew = document.getElementById("new-note");
+  const tagWrap = document.getElementById("tags");
+  const btnClear = document.getElementById("clear-filter");
+
+  function renderTags() {
+    if (!tagWrap) return;
+    const tags = store.getAllTags();
+    const active = store.getState().activeTag;
+    tagWrap.innerHTML = tags.length
+      ? tags.map(t => `
+        <button class="tag-chip" data-active="${t.tag === active}" data-tag="${t.tag}">
+          <span>#${t.tag}</span>
+          <span class="count">${t.count}</span>
+        </button>
+      `).join("")
+      : `<div class="muted" style="color:var(--muted); font-size:13px;">No tags yet</div>`;
+
+    tagWrap.querySelectorAll(".tag-chip").forEach(el => {
+      el.addEventListener("click", () => {
+        const tg = el.getAttribute("data-tag") || null;
+        const cur = store.getState().activeTag;
+        store.setActiveTag(cur === tg ? null : tg);
+      });
+    });
+  }
+
+  btnNew?.addEventListener("click", () => {
+    const note = store.createNote({
+      title: "New note",
+      content: "",
+    });
+    // maybe scroll list to top via event; main handles selection via store
+  });
+
+  btnClear?.addEventListener("click", () => {
+    store.setActiveTag(null);
+    store.setSearch("");
+  });
+
+  renderTags();
+  store.subscribe(renderTags);
+</script>

@@ -9,7 +9,9 @@ import ThemeToggle from '../components/ThemeToggle.astro';
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>Notes</title>
+		<link rel="stylesheet" href="/styles/global.css" />
+		<meta name="theme-color" content="#1e88e5" />
 	</head>
 	<body>
 		<ThemeToggle />
@@ -19,7 +21,6 @@ import ThemeToggle from '../components/ThemeToggle.astro';
 
 <style>
 	:root {
-		/* Light theme variables */
 		--bg-color: #ffffff;
 		--text-color: #111827;
 		--text-secondary: #4b5563;
@@ -28,18 +29,6 @@ import ThemeToggle from '../components/ThemeToggle.astro';
 		--card-hover-bg: rgba(255, 255, 255, 0.55);
 		--shadow-color: rgba(0, 0, 0, 0.1);
 		--shadow-hover-color: rgba(0, 0, 0, 0.15);
-	}
-
-	body.dark-theme {
-		/* Dark theme variables */
-		--bg-color: #111827;
-		--text-color: #f9fafb;
-		--text-secondary: #d1d5db;
-		--border-color: rgba(255, 255, 255, 0.2);
-		--card-bg: rgba(31, 41, 55, 0.9);
-		--card-hover-bg: rgba(31, 41, 55, 0.7);
-		--shadow-color: rgba(0, 0, 0, 0.3);
-		--shadow-hover-color: rgba(0, 0, 0, 0.4);
 	}
 
 	html,
