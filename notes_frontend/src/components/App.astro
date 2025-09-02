@@ -1,0 +1,19 @@
+---
+import TopBar from "./TopBar.astro";
+import Sidebar from "./Sidebar.astro";
+import NoteList from "./NoteList.astro";
+import NoteEditor from "./NoteEditor.astro";
+---
+
+<link rel="stylesheet" href="/styles/global.css" />
+
+<div class="container">
+  <div class="topbar"><TopBar /></div>
+  <div class="sidebar"><Sidebar /></div>
+  <main class="main">
+    <div style="display:grid; grid-template-columns: 420px 1fr;">
+      <NoteList />
+      <NoteEditor />
+    </div>
+  </main>
+</div>

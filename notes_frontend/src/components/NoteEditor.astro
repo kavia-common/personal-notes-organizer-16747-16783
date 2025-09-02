@@ -1,0 +1,115 @@
+---
+import { store, formatDate } from "../lib/store";
+---
+
+<div class="editor card">
+  <div id="editor-empty" class="empty hidden">
+    <p>Select a note or create a new one to begin.</p>
+  </div>
+
+  <div id="editor-wrap" class="wrap hidden">
+    <div class="top">
+      <input id="title" class="input title" placeholder="Title" />
+      <div class="actions">
+        <button class="btn btn-primary" id="save-btn">Save</button>
+      </div>
+    </div>
+    <div class="sub">
+      <input id="tags" class="input" placeholder="Tags (comma separated)" />
+      <div class="meta" id="meta"></div>
+    </div>
+    <textarea id="content" class="textarea" placeholder="Write your note here..."></textarea>
+  </div>
+</div>
+
+<style>
+  .editor {
+    margin: 12px 12px 12px 0;
+    padding: 12px;
+    background: #fff;
+    display: grid;
+    gap: 10px;
+    height: calc(100vh - 64px - 24px);
+  }
+  .empty {
+    color: var(--muted);
+    padding: 24px;
+  }
+  .wrap { display: grid; grid-template-rows: min-content min-content 1fr; gap: 10px; height: 100%; }
+  .top { display: flex; gap: 10px; align-items: center; }
+  .title { font-size: 20px; font-weight: 700; }
+  .actions { display: inline-flex; gap: 8px; }
+  .sub { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+  .meta { color: var(--muted); font-size: 12px; }
+  .textarea { flex: 1; min-height: 280px; }
+</style>
+
+<script>
+  import { store } from "../lib/store";
+
+  const elEmpty = document.getElementById("editor-empty");
+  const elWrap = document.getElementById("editor-wrap");
+  const elTitle = document.getElementById("title") as HTMLInputElement | null;
+  const elTags = document.getElementById("tags") as HTMLInputElement | null;
+  const elContent = document.getElementById("content") as HTMLTextAreaElement | null;
+  const elMeta = document.getElementById("meta");
+  const btnSave = document.getElementById("save-btn");
+
+  function syncFromNote() {
+    const state = store.getState();
+    const id = state.selectedNoteId;
+    const note = state.notes.find(n => n.id === id) || null;
+
+    if (!elEmpty || !elWrap || !elTitle || !elTags || !elContent || !elMeta) return;
+
+    if (!note) {
+      elEmpty.classList.remove("hidden");
+      elWrap.classList.add("hidden");
+      return;
+    }
+
+    elEmpty.classList.add("hidden");
+    elWrap.classList.remove("hidden");
+
+    elTitle.value = note.title;
+    elTags.value = note.tags.join(", ");
+    elContent.value = note.content;
+    elMeta.textContent = `Created ${new Date(note.createdAt).toLocaleString()} • Updated ${new Date(note.updatedAt).toLocaleString()}`;
+  }
+
+  btnSave?.addEventListener("click", () => {
+    const state = store.getState();
+    const id = state.selectedNoteId;
+    if (!id) return;
+    const tags = (elTags?.value || "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
+    store.updateNote(id, {
+      title: elTitle?.value || "Untitled",
+      content: elContent?.value || "",
+      tags,
+    });
+  });
+
+  // Auto-save on blur
+  function autoSave() {
+    const state = store.getState();
+    const id = state.selectedNoteId;
+    if (!id) return;
+    const tags = (elTags?.value || "")
+      .split(",").map(s => s.trim()).filter(Boolean);
+    store.updateNote(id, {
+      title: elTitle?.value || "Untitled",
+      content: elContent?.value || "",
+      tags,
+    });
+  }
+
+  elTitle?.addEventListener("blur", autoSave);
+  elTags?.addEventListener("blur", autoSave);
+  elContent?.addEventListener("blur", autoSave);
+
+  syncFromNote();
+  store.subscribe(syncFromNote);
+</script>

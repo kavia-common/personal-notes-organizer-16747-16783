@@ -1,0 +1,109 @@
+---
+import { store, formatDate } from "../lib/store";
+---
+
+<div class="list card scroll" id="note-list"></div>
+
+<style>
+  .list {
+    height: calc(100vh - 64px - 24px);
+    margin: 12px;
+    padding: 8px;
+    background: #fff;
+    display: grid;
+    grid-auto-rows: min-content;
+    gap: 6px;
+  }
+  .item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease, box-shadow .2s ease;
+  }
+  .item:hover {
+    background: #f9fbff;
+    border-color: #d8e6fb;
+    box-shadow: 0 6px 14px rgba(30,136,229,0.08);
+  }
+  .item[data-active="true"] {
+    border-color: var(--color-primary);
+    box-shadow: 0 10px 22px rgba(30,136,229,0.12);
+    background: #f3f8ff;
+  }
+
+  .title { font-weight: 700; }
+  .meta { color: var(--muted); font-size: 12px; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .tag {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .right { display: inline-flex; align-items: center; gap: 6px; }
+  .icon-btn {
+    border: 1px solid var(--border);
+    background: #fff;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .empty { padding: 18px; color: var(--muted); }
+</style>
+
+<script>
+  import { store, formatDate } from "../lib/store";
+
+  const wrap = document.getElementById("note-list");
+
+  function render() {
+    if (!wrap) return;
+    const state = store.getState();
+    const notes = store.getFilteredNotes();
+    const selected = state.selectedNoteId;
+
+    if (notes.length === 0) {
+      wrap.innerHTML = `<div class="empty">No notes found. Click "New note" to get started.</div>`;
+      return;
+    }
+
+    wrap.innerHTML = notes.map(n => `
+      <div class="item" data-id="${n.id}" data-active="${n.id === selected}">
+        <div class="left">
+          <div class="title">${n.title || "Untitled"}</div>
+          <div class="meta">Updated ${formatDate(n.updatedAt)}</div>
+          <div class="tags">
+            ${n.tags.map(t => `<span class="tag">#${t}</span>`).join("")}
+          </div>
+        </div>
+        <div class="right">
+          <button class="icon-btn" data-action="delete" title="Delete">🗑️</button>
+        </div>
+      </div>
+    `).join("");
+
+    wrap.querySelectorAll(".item").forEach(row => {
+      row.addEventListener("click", (e) => {
+        const target = e.target as HTMLElement;
+        const id = row.getAttribute("data-id");
+        if (!id) return;
+        // Delete button
+        if (target && target.getAttribute("data-action") === "delete") {
+          e.stopPropagation();
+          if (confirm("Delete this note?")) store.deleteNote(id);
+          return;
+        }
+        store.selectNote(id);
+      });
+    });
+  }
+
+  render();
+  store.subscribe(render);
+</script>
